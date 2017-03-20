@@ -1,7 +1,6 @@
 {
-  "itemDisplayName": "Create a Standard Stream Analytics Job",
-  "description": "This template creates a Standard Stream Analytics Job without input and output",
-  "summary": "Create a Standard Stream Analytics Job without input and output",
-  "githubUsername": "olandese",
-  "dateUpdated": "2017-01-21"
+  "itemDisplayName": "Creates 1) IoT Hub (2) Service Bus with 1 Queue (3) Storage account (4) Function App (5) Stream Analytics Job",
+  "description": "This template creates the resources for blog ",
+  "summary": "Creates 1) IoT Hub (2) Service Bus with 1 Queue (3) Storage account (4) Function App (5) Stream Analytics Job",
+  "githubUsername": "yogsgit"
 }
