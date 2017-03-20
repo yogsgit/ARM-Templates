@@ -59,7 +59,7 @@
   },
   "variables": {
     "location": "[resourceGroup().location]",
-    "serverfarmsName": "[concat(variables(resourceGroup().location),'plan')]"
+    "serverfarmsName": "[concat(variables('location'),'plan')]"
   },
   "resources": [
     {
