@@ -2,44 +2,65 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "IotHubs_MTCIoT_name": {
+    "iotHubName": {
       "defaultValue": "MTCIoT",
-      "type": "String"
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 50,
+      "metadata": {
+        "description": "IoT Hub name, can contain alphanumeric characters and hypen and must be 3-50 characters long."
+      }
     },
-    "namespaces_MTCBlogQueue_name": {
+    "serviceBusNamespaceName": {
       "defaultValue": "MTCBlogQueue",
-      "type": "String"
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 50,
+      "metadata": {
+        "description": "Service Bus namespace name, can contain alphanumeric characters and hypen and must be 6-50 characters long, must start with a letter and end with a letter or a number."
+      }
     },
-    "storageAccounts_mtctablestorage_name": {
-      "defaultValue": "mtctablestorage",
-      "type": "String"
-    },
-    "serverfarms_WestEuropePlan_name": {
-      "defaultValue": "WestEuropePlan",
-      "type": "String"
-    },
-    "sites_mtcblogfunction_name": {
-      "defaultValue": "mtcblogfunction",
-      "type": "String"
-    },
-    "AuthorizationRules_RootManageSharedAccessKey_name": {
-      "defaultValue": "MTCBlogQueue/RootManageSharedAccessKey",
-      "type": "String"
-    },
-    "queues_mtcblogqueue_name": {
+    "serviceBusQueueName": {
       "defaultValue": "mtcblogqueue",
-      "type": "String"
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "metadata": {
+        "description": "Service Bus queue name, can contain alphanumeric characters, period, underscore and hypen and must be 1-50 characters long, must start and end with a letter or a number."
+      }
     },
-    "streamanalytics_name": {
+    "storageAccountName": {
+      "defaultValue": "mtctablestorage",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 24,
+      "metadata": {
+        "description": "Storage account name, can contain alphanumeric characters and must be 3-24 characters long."
+      }
+    },
+    "functionAppName": {
+      "defaultValue": "mtcblogfunction",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 60,
+      "metadata": {
+        "description": "Function App name, can contain alphanumeric characters and hyphen and must be 2-60 characters long."
+      }
+    },
+    "streamAnalyticsJobName": {
       "defaultValue": "MTCStreamJob",
-      "type": "String"
-    },
-    "location": {
-      "defaultValue": "westeurope",
-      "type": "String"
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 63,
+      "metadata": {
+        "description": "Stream Analytics Job Name, can contain alphanumeric characters and hypen and must be 3-63 characters long."
+      }
     }
   },
-  "variables": { },
+  "variables": {
+    "location": "[resourceGroup().location]",
+    "serverfarmsName": "[concat(variables(resourceGroup().location),'plan')]"
+  },
   "resources": [
     {
       "type": "Microsoft.Devices/IotHubs",
@@ -48,80 +69,17 @@
         "tier": "Standard",
         "capacity": 1
       },
-      "name": "[parameters('IotHubs_MTCIoT_name')]",
+      "name": "[parameters('iotHubName')]",
       "apiVersion": "2016-02-03",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "tags": { },
       "properties": {
-        "ipFilterRules": [ ],
         "eventHubEndpoints": {
           "events": {
-            "retentionTimeInDays": 1,
-            "partitionCount": 2,
-            "partitionIds": [
-              "0",
-              "1"
-            ],
-            "path": "[concat(parameters('IotHubs_MTCIoT_name'),'mtciot', parameters('IotHubs_MTCIoT_name'))]",
-            "endpoint": "[concat('sb://iothub-ns-mtciot-127604-e33283e85a.servicebus.windows.net/')]"
-          },
-          "operationsMonitoringEvents": {
-            "retentionTimeInDays": 1,
-            "partitionCount": 2,
-            "partitionIds": [
-              "0",
-              "1"
-            ],
-            "path": "[concat(parameters('IotHubs_MTCIoT_name'),'mtciot-operationmonitoring')]",
-            "endpoint": "[concat('sb://iothub-ns-mtciot-127604-e33283e85a.servicebus.windows.net/')]"
+            "retentionTimeInDays": 7,
+            "partitionCount": 2
           }
-        },
-        "routing": {
-          "endpoints": {
-            "serviceBusQueues": [ ],
-            "serviceBusTopics": [ ],
-            "eventHubs": [ ]
-          },
-          "routes": [ ],
-          "fallbackRoute": {
-            "name": "$fallback",
-            "source": "DeviceMessages",
-            "condition": "true",
-            "endpointNames": [
-              "events"
-            ],
-            "isEnabled": true
-          }
-        },
-        "storageEndpoints": {
-          "$default": {
-            "sasTtlAsIso8601": "PT1H",
-            "connectionString": "",
-            "containerName": ""
-          }
-        },
-        "enableFileUploadNotifications": false,
-        "cloudToDevice": {
-          "maxDeliveryCount": 10,
-          "defaultTtlAsIso8601": "PT1H",
-          "feedback": {
-            "lockDurationAsIso8601": "PT1M",
-            "ttlAsIso8601": "PT1H",
-            "maxDeliveryCount": 10
-          }
-        },
-        "operationsMonitoringProperties": {
-          "events": {
-            "None": "None",
-            "Connections": "None",
-            "DeviceTelemetry": "None",
-            "C2DCommands": "None",
-            "DeviceIdentityOperations": "None",
-            "FileUploadOperations": "None",
-            "Routes": "None"
-          }
-        },
-        "features": "None"
+        }
       },
       "dependsOn": [ ]
     },
@@ -132,18 +90,11 @@
         "tier": "Basic"
       },
       "kind": "Messaging",
-      "name": "[parameters('namespaces_MTCBlogQueue_name')]",
+      "name": "[parameters('serviceBusNamespaceName')]",
       "apiVersion": "2015-08-01",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "tags": { },
-      "properties": {
-        "provisioningState": "Succeeded",
-        "status": "Active",
-        "createdAt": "2017-03-15T15:10:40.753Z",
-        "serviceBusEndpoint": "[concat('https://', parameters('namespaces_MTCBlogQueue_name'),'.servicebus.windows.net:443/')]",
-        "enabled": true,
-        "updatedAt": "2017-03-15T15:11:03.447Z"
-      },
+      "properties": { },
       "dependsOn": [ ]
     },
     {
@@ -153,9 +104,9 @@
         "tier": "Standard"
       },
       "kind": "Storage",
-      "name": "[parameters('storageAccounts_mtctablestorage_name')]",
+      "name": "[parameters('storageAccountName')]",
       "apiVersion": "2016-01-01",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "tags": { },
       "properties": { },
       "dependsOn": [ ]
@@ -170,11 +121,11 @@
         "capacity": 0
       },
       "kind": "functionapp",
-      "name": "[parameters('serverfarms_WestEuropePlan_name')]",
+      "name": "[variables('serverfarmsName')]",
       "apiVersion": "2015-08-01",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "properties": {
-        "name": "[parameters('serverfarms_WestEuropePlan_name')]",
+        "name": "[variables('serverfarmsName')]",
         "numberOfWorkers": 0
       },
       "dependsOn": [ ]
@@ -182,41 +133,19 @@
     {
       "type": "Microsoft.Web/sites",
       "kind": "functionapp",
-      "name": "[parameters('sites_mtcblogfunction_name')]",
+      "name": "[parameters('functionAppName')]",
       "apiVersion": "2015-08-01",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "properties": {
-        "name": "[parameters('sites_mtcblogfunction_name')]",
-        "hostNames": [
-          "[concat(parameters('sites_mtcblogfunction_name'),'.azurewebsites.net')]"
-        ],
-        "enabledHostNames": [
-          "[concat(parameters('sites_mtcblogfunction_name'),'.azurewebsites.net')]",
-          "[concat(parameters('sites_mtcblogfunction_name'),'.scm.azurewebsites.net')]"
-        ],
-        "hostNameSslStates": [
-          {
-            "name": "[concat(parameters('sites_mtcblogfunction_name'),'.azurewebsites.net')]",
-            "sslState": 0,
-            "thumbprint": null,
-            "ipBasedSslState": 0
-          },
-          {
-            "name": "[concat(parameters('sites_mtcblogfunction_name'),'.scm.azurewebsites.net')]",
-            "sslState": 0,
-            "thumbprint": null,
-            "ipBasedSslState": 0
-          }
-        ],
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_WestEuropePlan_name'))]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverfarmsName'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_WestEuropePlan_name'))]"
+        "[resourceId('Microsoft.Web/serverfarms', variables('serverfarmsName'))]"
       ]
     },
     {
       "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
-      "name": "[parameters('AuthorizationRules_RootManageSharedAccessKey_name')]",
+      "name": "[concat(parameters('serviceBusNamespaceName'),'/RootManageSharedAccessKey')]",
       "apiVersion": "2015-08-01",
       "properties": {
         "rights": [
@@ -226,47 +155,23 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_MTCBlogQueue_name'))]"
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
       ]
     },
     {
-      "comments": "Generalized from resource: '/subscriptions/26abae90-40a0-4e64-bf7b-3f6ed370a32a/resourcegroups/MTConnectBlog/providers/Microsoft.ServiceBus/namespaces/MTCBlogQueue/queues/mtcblogqueue'.",
       "type": "Microsoft.ServiceBus/namespaces/queues",
-      "name": "[concat(parameters('namespaces_MTCBlogQueue_name'),'/',parameters('queues_mtcblogqueue_name'))]",
+      "name": "[concat(parameters('serviceBusNamespaceName'),'/',parameters('serviceBusQueueName'))]",
       "apiVersion": "2015-08-01",
-      "location": "[parameters('location')]",
-      "properties": {
-        "maxSizeInMegabytes": 16384,
-        "requiresDuplicateDetection": false,
-        "requiresSession": false,
-        "defaultMessageTimeToLive": "14.00:00:00",
-        "deadLetteringOnMessageExpiration": false,
-        "enableBatchedOperations": true,
-        "isAnonymousAccessible": false,
-        "status": "Active",
-        "createdAt": "2017-03-15T15:17:37.8658858Z",
-        "updatedAt": "2017-03-15T15:17:41.18Z",
-        "accessedAt": "2017-03-19T23:29:25.3078122Z",
-        "supportOrdering": false,
-        "countDetails": {
-          "activeMessageCount": 0,
-          "deadLetterMessageCount": 0,
-          "scheduledMessageCount": 0,
-          "transferMessageCount": 0,
-          "transferDeadLetterMessageCount": 0
-        },
-        "autoDeleteOnIdle": "10675199.02:48:05.4775807",
-        "enablePartitioning": true,
-        "enableExpress": false
-      },
+      "location": "[variables('location')]",
+      "properties": { },
       "dependsOn": [
-        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_MTCBlogQueue_name'))]"
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
       ]
     },
     {
       "apiVersion": "2016-03-01",
-      "name": "[parameters('streamanalytics_name')]",
-      "location": "[parameters('location')]",
+      "name": "[parameters('streamAnalyticsJobName')]",
+      "location": "[variables('location')]",
       "type": "Microsoft.StreamAnalytics/StreamingJobs",
       "properties": {
         "sku": {
@@ -282,7 +187,7 @@
           "name": "Transformation",
           "properties": {
             "streamingUnits": 1,
-            "query": "SELECT\r\n    *\r\nINTO\r\n    [YourOutputAlias]\r\nFROM\r\n    [YourInputAlias]"
+            "query": ""
           }
         }
       }

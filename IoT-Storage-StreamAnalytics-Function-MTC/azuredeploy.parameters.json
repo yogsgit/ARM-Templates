@@ -2,32 +2,23 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "IotHubs_MTCIoT_name": {
+    "iotHubName": {
       "value": "MTCIoT"
     },
-    "namespaces_MTCBlogQueue_name": {
+    "serviceBusNamespaceName": {
       "value": "MTCBlogQueue"
     },
-    "storageAccounts_mtctablestorage_name": {
+    "storageAccountName": {
       "value": "mtctablestorage"
     },
-    "serverfarms_WestEuropePlan_name": {
-      "value": "WestEuropePlan"
-    },
-    "sites_mtcblogfunction_name": {
+    "functionAppName": {
       "value": "mtcblogfunction"
     },
-    "AuthorizationRules_RootManageSharedAccessKey_name": {
-      "value": "MTCBlogQueue/RootManageSharedAccessKey"
-    },
-    "queues_mtcblogqueue_name": {
+    "serviceBusQueueName": {
       "value": "MTCBlogQueue/mtcblogqueue"
     },
-    "streamanalytics_name": {
+    "streamAnalyticsJobName": {
       "value": "MTCStreamJob"
-    },
-    "location": {
-      "value": "westeurope"
     }
   }
 }
